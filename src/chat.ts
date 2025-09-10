@@ -6,6 +6,7 @@ const DEFAULTS = {
   title: "Chat",
   position: "right" as "left" | "right",
   greeting: "Hi! How can we help?",
+  hint: "Ask Anything about TCTS",
   theme: {
     accent: "#4f46e5",
     bg: "#111827",
@@ -62,6 +63,17 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     }
   }
 
+  private appendBotTemp(msg: string): HTMLDivElement {
+    const div = document.createElement("div");
+    div.textContent = msg;
+    div.style.textAlign = "left";
+    div.style.marginBottom = "6px";
+    div.className = "msg bot temporary"; // mark it as temporary
+    this.$.scroll.appendChild(div);
+    this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
+    return div;
+  }
+
   private mount() {
     const { zIndex, position, theme } = this.opts;
     this.root = document.createElement("div");
@@ -73,25 +85,25 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     document.body.appendChild(this.root);
 
     this.root.innerHTML = `
-      <button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
-            <span class="badge" aria-hidden="true"></span>
-            <span>Chat</span>
-          </button>
-          <div id="panel" class="panel" role="dialog" aria-modal="true" aria-label="Chat panel">
-            <div class="frame" id="frame">
-              <div class="titlebar" id="drag">
-                <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 7.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/></svg>
-                <div class="title" id="title"></div>
-                <div class="spacer"></div>
-                <button class="close" id="close" title="Close">✕</button>
-              </div>
-              <div class="scroll" id="scroll" aria-live="polite"></div>
-              <div class="input">
-                <textarea id="input" placeholder="Type a message…" aria-label="Your message"></textarea>
-                <button class="send" id="send">Send</button>
-              </div>
-            </div>
+    button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
+      <span class="badge" aria-hidden="true"></span>
+      <span>Chat</span>
+    </button>
+      <div id="panel" class="panel" role="dialog" aria-modal="true" aria-label="Chat panel" style="display:block">
+        <div class="frame" id="frame">
+          <div class="titlebar" id="drag">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 7.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/></svg>
+            <div class="title" id="title"></div>
+            <div class="spacer"></div>
+            <button class="close" id="close" title="Close">✕</button>
           </div>
+          <div class="scroll" id="scroll" aria-live="polite"></div>
+          <div class="input">
+            <textarea id="input" aria-label="Your message"></textarea>
+            <button class="send" id="send">Send</button>
+          </div>
+        </div>
+      </div>
     `;
 
     this.$.toggle = this.root.querySelector("#toggle");
@@ -105,6 +117,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.send = this.root.querySelector("#send");
 
     this.$.title.textContent = this.opts.title;
+    this.$.input.placeholder = this.opts.hint;
   }
 
   private wire() {
@@ -169,13 +182,27 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
   private handleSend() {
     const text = (this.$.input.value || "").trim();
     if (!text) return;
+
+    // Append user message
     this.appendUser(text);
     this.$.input.value = "";
     this.emitter.emit("send", text);
+
     if (this.opts.onSend) {
-      Promise.resolve(this.opts.onSend(text)).then((res: string) => {
-        if (res) this.appendBot(res);
-      });
+      const thinkingBubble = this.appendBotTemp("");
+
+      Promise.resolve(this.opts.onSend(text))
+        .then((res: string) => {
+          if (thinkingBubble) {
+            thinkingBubble.textContent = res;
+            thinkingBubble.classList.remove("temporary");
+          }
+        })
+        .catch((err) => {
+          thinkingBubble.textContent = "⚠️ Error!";
+          thinkingBubble.classList.remove("temporary");
+          console.error(err);
+        });
     }
   }
 

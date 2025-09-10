@@ -13,7 +13,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #f5f5f5;
+      background: #000
     }
   </style>
 </head>
@@ -24,14 +24,13 @@
   <script src="../dist/index.global.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // ChatOverlay is attached to window by the IIFE
       const chat = window.ChatOverlay.init({
         title: 'Support',
         greeting: 'Hello! Ask me anything ✨',
         position: 'right',
-        theme: { accent: '#22c55e' }, // lime/green
+        hint: 'Ask anything',
+        theme: { accent: '#053345' }, // lime/green
         onSend: async (text) => {
-          // Fake latency + echo. Replace with a real API call.
           await new Promise(r => setTimeout(r, 400))
           if (/help|price|plan/i.test(text)) {
             return 'We offer Free and Pro plans. Type "pricing" to learn more.'
@@ -39,8 +38,6 @@
           return `You said: ${text}`
         }
       });
-
-
       chat.open();
     });
   </script>
