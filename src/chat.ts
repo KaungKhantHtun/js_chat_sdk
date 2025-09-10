@@ -85,7 +85,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     document.body.appendChild(this.root);
 
     this.root.innerHTML = `
-    button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
+    <button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
       <span class="badge" aria-hidden="true"></span>
       <span>Chat</span>
     </button>
