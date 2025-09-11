@@ -21,15 +21,17 @@
 <body>
 
 
-  <script src="../dist/index.global.js"></script>
+  <!-- <script src="../dist/index.global.js"></script> -->
+
+  <script src="https://kaungkhanthtun.github.io/js_chat_sdk/sdk/index.global.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const chat = window.ChatOverlay.init({
         title: 'Support',
-        greeting: 'Hello! Ask me anything ✨',
+        greeting: 'Hello! How can I help you ?',
         position: 'right',
         hint: 'Ask anything',
-        theme: { accent: '#053345' }, // lime/green
+        theme: { accent: '#053345' },
         onSend: async (text) => {
           await new Promise(r => setTimeout(r, 400))
           if (/help|price|plan/i.test(text)) {
@@ -38,9 +40,9 @@
           return `You said: ${text}`
         }
       });
-      chat.open();
+      setTimeout(() => chat.open(), 1500)
     });
   </script>
 </body>
 
-</html>
+</html>s

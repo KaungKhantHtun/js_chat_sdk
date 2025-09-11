@@ -85,14 +85,13 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     document.body.appendChild(this.root);
 
     this.root.innerHTML = `
-    <button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
-      <span class="badge" aria-hidden="true"></span>
-      <span>Chat</span>
-    </button>
-      <div id="panel" class="panel" role="dialog" aria-modal="true" aria-label="Chat panel" style="display:block">
+      <button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
+        <span class="badge" aria-hidden="true"></span>
+        <span>Chat</span>
+      </button>
+      <div id="panel" class="panel" role="dialog" aria-modal="true" aria-label="Chat panel">
         <div class="frame" id="frame">
           <div class="titlebar" id="drag">
-            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 7.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/></svg>
             <div class="title" id="title"></div>
             <div class="spacer"></div>
             <button class="close" id="close" title="Close">✕</button>
