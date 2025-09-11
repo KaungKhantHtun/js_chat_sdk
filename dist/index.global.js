@@ -63,11 +63,12 @@
             padding: .75rem 1rem; 
             font-weight: 600; 
             box-shadow: 0 10px 20px rgba(0,0,0,.25); 
-          }
-
-          .btn { 
+         
             background: ${theme.accent}; 
             color: white; 
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
            }
 
           .badge { 
@@ -238,6 +239,9 @@
           this.emitter = new Emitter();
           this.isOpen = false;
           this.$ = {};
+          this.container = document.createElement("div");
+          document.body.appendChild(this.container);
+          this.shadowRoot = this.container.attachShadow({ mode: "open" });
           this.opts = {
             ...DEFAULTS,
             ...opts,
@@ -264,7 +268,7 @@
               this.opts.theme,
               this.opts.position
             );
-            document.head.appendChild(style);
+            this.shadowRoot.appendChild(style);
           }
         }
         appendBotTemp(msg) {
@@ -280,13 +284,13 @@
         mount() {
           const { zIndex, position, theme } = this.opts;
           this.root = document.createElement("div");
-          this.root.style.all = "initial";
           this.root.style.position = "fixed";
           this.root.style.zIndex = String(zIndex);
           this.root.style[position === "left" ? "left" : "right"] = "16px";
           this.root.style.bottom = "16px";
           document.body.appendChild(this.root);
-          this.root.innerHTML = `
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = `
       <button class="btn" id="toggle" aria-controls="panel" aria-expanded="false" title="Open chat">
         <span class="badge" aria-hidden="true"></span>
         <span>Chat</span>
@@ -306,15 +310,16 @@
         </div>
       </div>
     `;
-          this.$.toggle = this.root.querySelector("#toggle");
-          this.$.panel = this.root.querySelector("#panel");
-          this.$.frame = this.root.querySelector("#frame");
-          this.$.drag = this.root.querySelector("#drag");
-          this.$.close = this.root.querySelector("#close");
-          this.$.title = this.root.querySelector("#title");
-          this.$.scroll = this.root.querySelector("#scroll");
-          this.$.input = this.root.querySelector("#input");
-          this.$.send = this.root.querySelector("#send");
+          this.shadowRoot.appendChild(wrapper);
+          this.$.toggle = this.shadowRoot.querySelector("#toggle");
+          this.$.panel = this.shadowRoot.querySelector("#panel");
+          this.$.frame = this.shadowRoot.querySelector("#frame");
+          this.$.drag = this.shadowRoot.querySelector("#drag");
+          this.$.close = this.shadowRoot.querySelector("#close");
+          this.$.title = this.shadowRoot.querySelector("#title");
+          this.$.scroll = this.shadowRoot.querySelector("#scroll");
+          this.$.input = this.shadowRoot.querySelector("#input");
+          this.$.send = this.shadowRoot.querySelector("#send");
           this.$.title.textContent = this.opts.title;
           this.$.input.placeholder = this.opts.hint;
         }

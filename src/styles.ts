@@ -18,11 +18,12 @@ export const Chat_Overlay_Styles = (theme: any, position: "left" | "right") => `
             padding: .75rem 1rem; 
             font-weight: 600; 
             box-shadow: 0 10px 20px rgba(0,0,0,.25); 
-          }
-
-          .btn { 
+         
             background: ${theme.accent}; 
             color: white; 
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
            }
 
           .badge { 
