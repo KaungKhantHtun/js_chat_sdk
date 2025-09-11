@@ -321,9 +321,11 @@
         wire() {
           this.$.toggle.addEventListener("click", () => this.toggle());
           this.$.close.addEventListener("click", () => this.close());
+          this.$.send.addEventListener("click", () => this.handleSend());
           this.$.input.addEventListener("keydown", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
+              this.handleSend();
             }
             if (e.key === "Escape") this.close();
           });
