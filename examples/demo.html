@@ -32,13 +32,13 @@
         position: 'right',
         hint: 'Ask anything',
         theme: { accent: '#053345' },
-        onSend: async (text) => {
-          await new Promise(r => setTimeout(r, 400))
-          if (/help|price|plan/i.test(text)) {
-            return 'We offer Free and Pro plans. Type "pricing" to learn more.'
-          }
-          return `You said: ${text}`
-        }
+        // onSend: async (text) => {
+        //   await new Promise(r => setTimeout(r, 400))
+        //   if (/help|price|plan/i.test(text)) {
+        //     return 'We offer Free and Pro plans. Type "pricing" to learn more.'
+        //   }
+        //   return `You said: ${text}`
+        // }
       });
       setTimeout(() => chat.open(), 1500)
     });

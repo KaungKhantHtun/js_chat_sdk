@@ -190,6 +190,32 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.drag.addEventListener("touchstart", onDown, { passive: true });
   }
 
+  // private async askQuestion(question: string) {
+  //   const response = await fetch(
+  //     `http://localhost:8000/ask?question=${encodeURIComponent(question)}`,
+  //     {
+  //       method: "GET",
+  //       headers: { Accept: "text/plain" },
+  //     }
+  //   );
+
+  //   const data = await response.json();
+  //   if (!response.body) return;
+
+  //   console.log(data);
+  //   return data;
+  // }
+
+  private async askQue(question: string) {
+    const resp = await fetch(
+      `http://localhost:8000/ask?question=${encodeURIComponent(question)}`
+    );
+    console.log(question);
+    const data = await resp.json();
+    console.log(data);
+    return data;
+  }
+
   private handleSend() {
     const text = (this.$.input.value || "").trim();
     if (!text) return;
@@ -199,22 +225,23 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.input.value = "";
     this.emitter.emit("send", text);
 
-    if (this.opts.onSend) {
-      const thinkingBubble = this.appendBotTemp("");
+    // if (this.opts.onSend) {
+    const thinkingBubble = this.appendBotTemp("");
 
-      Promise.resolve(this.opts.onSend(text))
-        .then((res: string) => {
-          if (thinkingBubble) {
-            thinkingBubble.textContent = res;
-            thinkingBubble.classList.remove("temporary");
-          }
-        })
-        .catch((err) => {
-          thinkingBubble.textContent = "⚠️ Error!";
+    Promise.resolve(this.askQue(text))
+      .then((res) => {
+        if (thinkingBubble) {
+          thinkingBubble.textContent = res;
           thinkingBubble.classList.remove("temporary");
-          console.error(err);
-        });
-    }
+          this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
+        }
+      })
+      .catch((err) => {
+        thinkingBubble.textContent = "⚠️ Error!";
+        thinkingBubble.classList.remove("temporary");
+        console.error(err);
+      });
+    // }
   }
 
   private appendUser(msg: string) {
