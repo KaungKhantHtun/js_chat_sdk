@@ -237,7 +237,9 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
         }
       })
       .catch((err) => {
-        thinkingBubble.textContent = "⚠️ Error!";
+        thinkingBubble.textContent =
+          "⚠️ Error! cannot connect to the server" +
+          "\nHey Chit. Whatever you are the future CTO ";
         thinkingBubble.classList.remove("temporary");
         console.error(err);
       });

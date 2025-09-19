@@ -412,7 +412,7 @@
               this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
             }
           }).catch((err) => {
-            thinkingBubble.textContent = "\u26A0\uFE0F Error!";
+            thinkingBubble.textContent = "\u26A0\uFE0F Error! cannot connect to the server\n Hey Chit. Whatever you are the future CTO ";
             thinkingBubble.classList.remove("temporary");
             console.error(err);
           });
