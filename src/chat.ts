@@ -91,6 +91,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.root.style.zIndex = String(zIndex);
     this.root.style[position === "left" ? "left" : "right"] = "16px";
     this.root.style.bottom = "16px";
+
     document.body.appendChild(this.root);
 
     // wrapper content
@@ -105,7 +106,56 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
           <div class="titlebar" id="drag">
             <div class="title" id="title"></div>
             <div class="spacer"></div>
-            <button class="close" id="close" title="Close">✕</button>
+            <button class="expand" id="expand" title="Expand">
+              <?xml version="1.0" encoding="utf-8"?>
+
+                <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+                <svg fill="#fff" width="28px" height="28px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+
+                <g data-name="Layer 2">
+
+                <g data-name="expand">
+
+                <rect width="24" height="24" transform="rotate(180 12 12)" opacity="0"/>
+
+                <path d="M20 5a1 1 0 0 0-1-1h-5a1 1 0 0 0 0 2h2.57l-3.28 3.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0L18 7.42V10a1 1 0 0 0 1 1 1 1 0 0 0 1-1z"/>
+
+                <path d="M10.71 13.29a1 1 0 0 0-1.42 0L6 16.57V14a1 1 0 0 0-1-1 1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 0-2H7.42l3.29-3.29a1 1 0 0 0 0-1.42z"/>
+
+                </g>
+
+                </g>
+
+                </svg>  
+            
+            </button>
+            <button class="collapse" id="collapse" title="Collapse">
+              <?xml version="1.0" encoding="utf-8"?>
+
+                <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+                <svg fill="#fff" width="28px" height="28px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+
+                <g data-name="Layer 2">
+
+                <g data-name="collapse">
+
+                <rect width="24" height="24" transform="rotate(180 12 12)" opacity="0"/>
+
+                <path d="M19 9h-2.58l3.29-3.29a1 1 0 1 0-1.42-1.42L15 7.57V5a1 1 0 0 0-1-1 1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 0-2z"/>
+
+                <path d="M10 13H5a1 1 0 0 0 0 2h2.57l-3.28 3.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0L9 16.42V19a1 1 0 0 0 1 1 1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1z"/>
+
+                </g>
+
+                </g>
+
+                </svg>
+            </button>
+            <button class="close" id="close" title="Close">
+              <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+              <svg width="24px" height="24px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff" d="M195.2 195.2a64 64 0 0 1 90.496 0L512 421.504 738.304 195.2a64 64 0 0 1 90.496 90.496L602.496 512 828.8 738.304a64 64 0 0 1-90.496 90.496L512 602.496 285.696 828.8a64 64 0 0 1-90.496-90.496L421.504 512 195.2 285.696a64 64 0 0 1 0-90.496z"/></svg>
+            </button>
+            
           </div>
           <div class="scroll" id="scroll" aria-live="polite"></div>
           <div class="input">
@@ -127,6 +177,9 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.input = this.shadowRoot.querySelector("#input");
     this.$.send = this.shadowRoot.querySelector("#send");
 
+    this.$.expand = this.shadowRoot.querySelector("#expand");
+    this.$.collapse = this.shadowRoot.querySelector("#collapse");
+
     this.$.title.textContent = this.opts.title;
     this.$.input.placeholder = this.opts.hint;
   }
@@ -142,6 +195,10 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
       }
       if (e.key === "Escape") this.close();
     });
+
+    this.$.expand.addEventListener("click", () => this.expand());
+    this.$.collapse.addEventListener("click", () => this.collapse());
+
     // simple drag within viewport
     let startX = 0,
       startY = 0,
@@ -190,31 +247,15 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.drag.addEventListener("touchstart", onDown, { passive: true });
   }
 
-  // private async askQuestion(question: string) {
-  //   const response = await fetch(
-  //     `http://localhost:8000/ask?question=${encodeURIComponent(question)}`,
-  //     {
-  //       method: "GET",
-  //       headers: { Accept: "text/plain" },
-  //     }
+  // private async askQue(question: string) {
+  //   const resp = await fetch(
+  //     `http://localhost:8000/ask?question=${encodeURIComponent(question)}`
   //   );
-
-  //   const data = await response.json();
-  //   if (!response.body) return;
-
+  //   console.log(question);
+  //   const data = await resp.json();
   //   console.log(data);
   //   return data;
   // }
-
-  private async askQue(question: string) {
-    const resp = await fetch(
-      `http://localhost:8000/ask?question=${encodeURIComponent(question)}`
-    );
-    console.log(question);
-    const data = await resp.json();
-    console.log(data);
-    return data;
-  }
 
   private handleSend() {
     const text = (this.$.input.value || "").trim();
@@ -228,7 +269,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     // if (this.opts.onSend) {
     const thinkingBubble = this.appendBotTemp("");
 
-    Promise.resolve(this.askQue(text))
+    Promise.resolve(this.opts.onSend(text))
       .then((res) => {
         if (thinkingBubble) {
           thinkingBubble.textContent = res;
@@ -237,9 +278,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
         }
       })
       .catch((err) => {
-        thinkingBubble.textContent =
-          "⚠️ Error! cannot connect to the server" +
-          "\nHey Chit. Whatever you are the future CTO ";
+        thinkingBubble.textContent = "⚠️ Error! cannot connect to the server";
         thinkingBubble.classList.remove("temporary");
         console.error(err);
       });
@@ -249,7 +288,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
   private appendUser(msg: string) {
     const div = document.createElement("div");
     div.textContent = msg;
-    div.style.textAlign = "right";
+    // div.style.textAlign = "right";
     div.style.marginBottom = "6px";
     div.className = `msg me`;
     this.$.scroll.appendChild(div);
@@ -279,5 +318,43 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
   }
   on(event: string, cb: (...args: any[]) => void) {
     return this.emitter.on(event, cb);
+  }
+  expand() {
+    this.$.panel.style = `
+      position: fixed; 
+      inset: 0px; 
+      top: 0px;
+      bottom: 0px; 
+      left: 0px;
+      right: 0px; 
+      width: 100vw; 
+      height: 100vh;
+      overflow: hidden; 
+      border-radius: 0px; 
+      box-shadow: 0 24px 72px rgba(0,0,0,.45); 
+      display: block; 
+    `;
+
+    this.$.expand.style.display = "none";
+    this.$.collapse.style.display = "block";
+  }
+  collapse() {
+    this.$.panel.style = `
+      position: fixed; 
+      inset: auto; 
+      bottom: 88px; 
+      right:16px; 
+      width: 360px; 
+      max-width: calc(100vw - 32px); 
+      height: 520px; 
+      border-radius: 16px; 
+      overflow: hidden; 
+      box-shadow: 0 24px 72px rgba(0,0,0,.45); 
+      display: block; 
+   
+    `;
+
+    this.$.expand.style.display = "block";
+    this.$.collapse.style.display = "none";
   }
 }

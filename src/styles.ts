@@ -39,7 +39,6 @@ export const Chat_Overlay_Styles = (theme: any, position: "left" | "right") => `
             bottom: 88px; 
             ${position === "left" ? "left:16px;" : "right:16px;"} 
             width: 360px; 
-            max-width: calc(100vw - 32px); 
             height: 520px; 
             border-radius: 16px; 
             overflow: hidden; 
@@ -83,6 +82,23 @@ export const Chat_Overlay_Styles = (theme: any, position: "left" | "right") => `
             border: 0; 
             cursor: pointer; 
             font-size: 18px; 
+          }
+
+          .expand { 
+            background: transparent; 
+            color: inherit; 
+            border: 0; 
+            cursor: pointer; 
+            font-size: 18px; 
+          }
+
+          .collapse { 
+            background: transparent; 
+            color: inherit; 
+            border: 0; 
+            cursor: pointer; 
+            font-size: 18px; 
+            display: none;
           }
 
           .scroll { 
