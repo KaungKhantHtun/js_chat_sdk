@@ -247,15 +247,15 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.drag.addEventListener("touchstart", onDown, { passive: true });
   }
 
-  // private async askQue(question: string) {
-  //   const resp = await fetch(
-  //     `http://localhost:8000/ask?question=${encodeURIComponent(question)}`
-  //   );
-  //   console.log(question);
-  //   const data = await resp.json();
-  //   console.log(data);
-  //   return data;
-  // }
+  private async askQue(question: string) {
+    const resp = await fetch(
+      `http://10.172.128.109:9091/ask?question=${encodeURIComponent(question)}`
+    );
+    console.log(question);
+    const data = await resp.json();
+    console.log(data);
+    return data;
+  }
 
   private handleSend() {
     const text = (this.$.input.value || "").trim();
@@ -269,7 +269,9 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     // if (this.opts.onSend) {
     const thinkingBubble = this.appendBotTemp("");
 
-    Promise.resolve(this.opts.onSend(text))
+    Promise.resolve(
+      this.opts.onSend ? this.opts.onSend(text) : this.askQue(text)
+    )
       .then((res) => {
         if (thinkingBubble) {
           thinkingBubble.textContent = res;

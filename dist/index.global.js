@@ -445,15 +445,15 @@
           this.$.drag.addEventListener("mousedown", onDown);
           this.$.drag.addEventListener("touchstart", onDown, { passive: true });
         }
-        // private async askQue(question: string) {
-        //   const resp = await fetch(
-        //     `http://localhost:8000/ask?question=${encodeURIComponent(question)}`
-        //   );
-        //   console.log(question);
-        //   const data = await resp.json();
-        //   console.log(data);
-        //   return data;
-        // }
+        async askQue(question) {
+          const resp = await fetch(
+            `http://10.172.128.109:9091/ask?question=${encodeURIComponent(question)}`
+          );
+          console.log(question);
+          const data = await resp.json();
+          console.log(data);
+          return data;
+        }
         handleSend() {
           const text = (this.$.input.value || "").trim();
           if (!text) return;
@@ -461,7 +461,9 @@
           this.$.input.value = "";
           this.emitter.emit("send", text);
           const thinkingBubble = this.appendBotTemp("");
-          Promise.resolve(this.opts.onSend(text)).then((res) => {
+          Promise.resolve(
+            this.opts.onSend ? this.opts.onSend(text) : this.askQue(text)
+          ).then((res) => {
             if (thinkingBubble) {
               thinkingBubble.textContent = res;
               thinkingBubble.classList.remove("temporary");
