@@ -370,7 +370,10 @@
           <div class="scroll" id="scroll" aria-live="polite"></div>
           <div class="input">
             <textarea id="input" aria-label="Your message"></textarea>
-            <button class="send" id="send">Send</button>
+            <button class="send" id="send">
+              <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+              <svg fill="#eeeeee" width="32px" height="32px" viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg"><path d="m21.426 11.095-17-8A.999.999 0 0 0 3.03 4.242L4.969 12 3.03 19.758a.998.998 0 0 0 1.396 1.147l17-8a1 1 0 0 0 0-1.81zM5.481 18.197l.839-3.357L12 12 6.32 9.16l-.839-3.357L18.651 12l-13.17 6.197z"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -449,9 +452,7 @@
           const resp = await fetch(
             `http://10.172.128.109:9091/ask?question=${encodeURIComponent(question)}`
           );
-          console.log(question);
           const data = await resp.json();
-          console.log(data);
           return data;
         }
         handleSend() {
@@ -460,19 +461,47 @@
           this.appendUser(text);
           this.$.input.value = "";
           this.emitter.emit("send", text);
+          const query = this.chatHistory ? `
+    ${text}
+
+    Please intelligence memorize the following previous conversation: ${this.chatHistory}
+    ` : text;
           const thinkingBubble = this.appendBotTemp("");
           Promise.resolve(
-            this.opts.onSend ? this.opts.onSend(text) : this.askQue(text)
-          ).then((res) => {
+            this.opts.onSend ? this.opts.onSend(query) : this.askQue(query)
+          ).then(async (res) => {
             if (thinkingBubble) {
-              thinkingBubble.textContent = res;
               thinkingBubble.classList.remove("temporary");
+              this.chatHistory = `
+  {
+    Question: ${text}, 
+    Answer: ${res ? res : ""}
+  }
+          `;
+              await this.typeText(thinkingBubble, res);
               this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
             }
           }).catch((err) => {
             thinkingBubble.textContent = "\u26A0\uFE0F Error! cannot connect to the server";
             thinkingBubble.classList.remove("temporary");
             console.error(err);
+          });
+        }
+        typeText(el, text, speed = 15) {
+          return new Promise((resolve) => {
+            let i = 0;
+            const interval = setInterval(() => {
+              el.textContent += text[i];
+              i++;
+              this.$.scroll.scrollTo({
+                top: this.$.scroll.scrollHeight,
+                behavior: "smooth"
+              });
+              if (i >= text.length) {
+                clearInterval(interval);
+                resolve();
+              }
+            }, speed);
           });
         }
         appendUser(msg) {
