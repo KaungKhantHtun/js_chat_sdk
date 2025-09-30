@@ -1,3 +1,4 @@
+import { Conversation } from "./conversation";
 import { Emitter } from "./emitter";
 
 import { Chat_Overlay_Styles } from "./styles";
@@ -42,7 +43,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
   private shadowRoot: ShadowRoot;
   private container: HTMLElement;
 
-  private chatHistory: any;
+  private conversations: Conversation[] = [];
 
   constructor(opts: any) {
     this.container = document.createElement("div");
@@ -160,7 +161,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
             
           </div>
           <div class="scroll" id="scroll" aria-live="polite"></div>
-          <div class="input">
+          <div class="input" id="input-container">
             <textarea id="input" aria-label="Your message"></textarea>
             <button class="send" id="send">
               <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
@@ -184,6 +185,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
 
     this.$.expand = this.shadowRoot.querySelector("#expand");
     this.$.collapse = this.shadowRoot.querySelector("#collapse");
+    this.$.inputContainer = this.shadowRoot.querySelector("#input-container");
 
     this.$.title.textContent = this.opts.title;
     this.$.input.placeholder = this.opts.hint;
@@ -252,10 +254,17 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.$.drag.addEventListener("touchstart", onDown, { passive: true });
   }
 
-  private async askQue(question: string) {
-    const resp = await fetch(
-      `http://10.172.128.109:9091/ask?question=${encodeURIComponent(question)}`
-    );
+  private async askQue(question: string, conversations: Conversation[]) {
+    let request = {
+      question: question,
+      conversations: conversations,
+    };
+
+    const resp = await fetch(`http://tbm-et-gpt01:8000/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
     const data = await resp.json();
     return data;
   }
@@ -268,29 +277,27 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
     this.appendUser(text);
     this.$.input.value = "";
     this.emitter.emit("send", text);
-    const query = this.chatHistory
-      ? `
-    ${text}
+    // const query = this.chatHistory
+    //   ? `
+    // ${text}
 
-    Please intelligence memorize the following previous conversation: ${this.chatHistory}
-    `
-      : text;
-    // if (this.opts.onSend) {
+    // Conversation so far: ${this.chatHistory}
+
+    // `
+    //  : text;
+    const question = text;
     const thinkingBubble = this.appendBotTemp("");
 
     Promise.resolve(
-      this.opts.onSend ? this.opts.onSend(query) : this.askQue(query)
+      this.opts.onSend
+        ? this.opts.onSend(question)
+        : this.askQue(question, this.conversations)
     )
       .then(async (res) => {
         if (thinkingBubble) {
           //thinkingBubble.textContent = res;
           thinkingBubble.classList.remove("temporary");
-          this.chatHistory = `
-  {
-    Question: ${text}, 
-    Answer: ${res ? res : ""}
-  }
-          `;
+          this.conversations.push(new Conversation(question, res));
           await this.typeText(thinkingBubble, res);
           this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
         }
@@ -373,6 +380,7 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
 
     this.$.expand.style.display = "none";
     this.$.collapse.style.display = "block";
+    
   }
   collapse() {
     this.$.panel.style = `
@@ -387,7 +395,6 @@ export class ChatOverlayImpl implements ChatOverlayAPI {
       overflow: hidden; 
       box-shadow: 0 24px 72px rgba(0,0,0,.45); 
       display: block; 
-   
     `;
 
     this.$.expand.style.display = "block";

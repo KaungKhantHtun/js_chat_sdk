@@ -8,6 +8,20 @@
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
 
+  // src/conversation.ts
+  var Conversation;
+  var init_conversation = __esm({
+    "src/conversation.ts"() {
+      "use strict";
+      Conversation = class {
+        constructor(user, assistant) {
+          this.user = user;
+          this.assistant = assistant;
+        }
+      };
+    }
+  });
+
   // src/emitter.ts
   var Emitter;
   var init_emitter = __esm({
@@ -235,6 +249,7 @@
   var init_chat = __esm({
     "src/chat.ts"() {
       "use strict";
+      init_conversation();
       init_emitter();
       init_styles();
       DEFAULTS = {
@@ -255,6 +270,7 @@
           this.emitter = new Emitter();
           this.isOpen = false;
           this.$ = {};
+          this.conversations = [];
           this.container = document.createElement("div");
           document.body.appendChild(this.container);
           this.shadowRoot = this.container.attachShadow({ mode: "open" });
@@ -368,7 +384,7 @@
             
           </div>
           <div class="scroll" id="scroll" aria-live="polite"></div>
-          <div class="input">
+          <div class="input" id="input-container">
             <textarea id="input" aria-label="Your message"></textarea>
             <button class="send" id="send">
               <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
@@ -390,6 +406,7 @@
           this.$.send = this.shadowRoot.querySelector("#send");
           this.$.expand = this.shadowRoot.querySelector("#expand");
           this.$.collapse = this.shadowRoot.querySelector("#collapse");
+          this.$.inputContainer = this.shadowRoot.querySelector("#input-container");
           this.$.title.textContent = this.opts.title;
           this.$.input.placeholder = this.opts.hint;
         }
@@ -448,10 +465,16 @@
           this.$.drag.addEventListener("mousedown", onDown);
           this.$.drag.addEventListener("touchstart", onDown, { passive: true });
         }
-        async askQue(question) {
-          const resp = await fetch(
-            `http://10.172.128.109:9091/ask?question=${encodeURIComponent(question)}`
-          );
+        async askQue(question, conversations) {
+          let request = {
+            question,
+            conversations
+          };
+          const resp = await fetch(`http://tbm-et-gpt01:8000/ask`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(request)
+          });
           const data = await resp.json();
           return data;
         }
@@ -461,23 +484,14 @@
           this.appendUser(text);
           this.$.input.value = "";
           this.emitter.emit("send", text);
-          const query = this.chatHistory ? `
-    ${text}
-
-    Please intelligence memorize the following previous conversation: ${this.chatHistory}
-    ` : text;
+          const question = text;
           const thinkingBubble = this.appendBotTemp("");
           Promise.resolve(
-            this.opts.onSend ? this.opts.onSend(query) : this.askQue(query)
+            this.opts.onSend ? this.opts.onSend(question) : this.askQue(question, this.conversations)
           ).then(async (res) => {
             if (thinkingBubble) {
               thinkingBubble.classList.remove("temporary");
-              this.chatHistory = `
-  {
-    Question: ${text}, 
-    Answer: ${res ? res : ""}
-  }
-          `;
+              this.conversations.push(new Conversation(question, res));
               await this.typeText(thinkingBubble, res);
               this.$.scroll.scrollTop = this.$.scroll.scrollHeight;
             }
@@ -566,7 +580,6 @@
       overflow: hidden; 
       box-shadow: 0 24px 72px rgba(0,0,0,.45); 
       display: block; 
-   
     `;
           this.$.expand.style.display = "block";
           this.$.collapse.style.display = "none";
